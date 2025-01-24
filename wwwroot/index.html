@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+
+<div class="container mt-5">
+    <h2>User Management</h2>
+    <div class="mb-3">
+        <button class="btn btn-danger" onclick="blockUsers()">Block</button>
+        <button class="btn btn-success" onclick="unblockUsers()">Unblock</button>
+        <button class="btn btn-warning" onclick="deleteUsers()">Delete</button>
+    </div>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th><input type="checkbox" id="selectAll"></th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Last Login</th>
+                <th>Created At</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="userTable"></tbody>
+    </table>
+</div>
+
+<script>
+    const API_URL = "http://localhost:5268/api/users";
+    let token = localStorage.getItem("token");
+
+    if (!token) window.location.href = "login.html";  
+
+    document.addEventListener("DOMContentLoaded", loadUsers);
+
+    async function loadUsers() {
+        try {
+            let response = await fetch(API_URL, { headers: { Authorization: `Bearer ${token}` } });
+
+            if (!response.ok) {
+                console.error("API error:", response.status);
+                return;
+            }
+
+            let users = await response.json();
+            console.log("Fetched users:", users); 
+
+            let table = document.getElementById("userTable");
+            table.innerHTML = "";
+
+            users.forEach(user => {
+                let row = `<tr>
+                    <td><input type="checkbox" value="${user.id}"></td>
+                    <td>${user.name}</td>
+                    <td>${user.email}</td>
+                    <td>${user.lastLoginTime ? new Date(user.lastLoginTime).toLocaleString() : "Never"}</td>
+                    <td>${user.createdAt ? new Date(user.createdAt).toLocaleString() : "N/A"}</td>
+                    <td>${user.isBlocked ? 'Blocked' : 'Active'}</td>
+                </tr>`;
+                table.innerHTML += row;
+            });
+
+        } catch (error) {
+            console.error("Error fetching users:", error);
+        }
+    }
+
+    function getSelectedUsers() {
+        return Array.from(document.querySelectorAll("input[type='checkbox']:checked"))
+            .map(checkbox => checkbox.value);
+    }
+
+    async function blockUsers() {
+    let selected = getSelectedUsers();
+    if (selected.length === 0) {
+        alert("No users selected to block.");
+        return;
+    }
+
+    try {
+        const response = await fetch(API_URL + "/block", {
+            method: "PUT",
+            headers: jsonHeaders(),
+            body: JSON.stringify(selected)
+        });
+        if (!response.ok) {
+            throw new Error("Error blocking users.");
+        }
+        loadUsers();
+    } catch (error) {
+        console.error("Error in blockUsers:", error);
+        alert("Error blocking users.");
+    }
+}
+
+async function unblockUsers() {
+    let selected = getSelectedUsers();
+    if (selected.length === 0) {
+        alert("No users selected to unblock.");
+        return;
+    }
+
+    try {
+        const response = await fetch(API_URL + "/unblock", {
+            method: "PUT",
+            headers: jsonHeaders(),
+            body: JSON.stringify(selected)
+        });
+        if (!response.ok) {
+            throw new Error("Error unblocking users.");
+        }
+        loadUsers();
+    } catch (error) {
+        console.error("Error in unblockUsers:", error);
+        alert("Error unblocking users.");
+    }
+}
+
+async function deleteUsers() {
+    let selected = getSelectedUsers();
+    if (selected.length === 0) {
+        alert("No users selected to delete.");
+        return;
+    }
+
+    try {
+        const response = await fetch(API_URL, {
+            method: "DELETE",
+            headers: jsonHeaders(),
+            body: JSON.stringify(selected)
+        });
+        if (!response.ok) {
+            throw new Error("Error deleting users.");
+        }
+        loadUsers();
+    } catch (error) {
+        console.error("Error in deleteUsers:", error);
+        alert("Error deleting users.");
+    }
+}
+
+    function jsonHeaders() {
+        return { "Content-Type": "application/json", Authorization: `Bearer ${token}` };
+    }
+
+    document.getElementById("selectAll").addEventListener("change", function () {
+        document.querySelectorAll("input[type='checkbox']").forEach(cb => cb.checked = this.checked);
+    });
+</script>
+
+</body>
+</html>
