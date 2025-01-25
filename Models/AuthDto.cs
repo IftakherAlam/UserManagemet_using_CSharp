@@ -1,15 +1,15 @@
-namespace usermangement.Models
+namespace usermanagement.Models
 {
     public class RegisterRequest
     {
-        public string Name { get; set; }
-        public string Email { get; set; }
-        public string Password { get; set; }
+        public required string Name { get; set; } // Add `required` modifier (C# 11+)
+        public required string Email { get; set; } // Add `required` modifier (C# 11+)
+        public required string Password { get; set; } // Add `required` modifier (C# 11+)
     }
 
     public class LoginRequest
     {
-        public string Email { get; set; }
-        public string Password { get; set; }
+        public required string Email { get; set; } // Add `required` modifier (C# 11+)
+        public required string Password { get; set; } // Add `required` modifier (C# 11+)
     }
 }

@@ -1,12 +1,12 @@
 using Microsoft.EntityFrameworkCore;
-using usermangement.Models;
+using usermanagement.Models;
 
-namespace usermangement.Data
+namespace usermanagement.Data
 {
     public class ApplicationDbContext : DbContext
     {
-         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
-         public DbSet<User> Users { get; set; }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options) { }
+        public DbSet<User> Users { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

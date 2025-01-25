@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace usermangement.Models
+namespace usermanagement.Models
 {
     public class User
     {
@@ -10,15 +10,13 @@ namespace usermangement.Models
         public Guid Id { get; set; } = Guid.NewGuid();
 
         [Required]
-        public string Name { get; set; }
+        public required string Name { get; set; } // Add `required` modifier (C# 11+)
 
         [Required, EmailAddress]
-
-        public string Email { get; set; }
+        public required string Email { get; set; } // Add `required` modifier (C# 11+)
 
         [Required]
-
-        public string PasswordHash { get; set; }
+        public required string PasswordHash { get; set; } // Add `required` modifier (C# 11+)
 
         public DateTime LastLoginTime { get; set; } = DateTime.UtcNow;
 
@@ -26,5 +24,4 @@ namespace usermangement.Models
 
         public bool IsBlocked { get; set; } = false;
     }
-    
 }

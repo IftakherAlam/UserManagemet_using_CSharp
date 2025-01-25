@@ -1,14 +1,14 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using usermangement.Data;
-using usermangement.Models;
+using usermanagement.Data;
+using usermanagement.Models;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace usermangement.Controllers
+namespace usermanagement.Controllers
 {
     [Route("api/users")]
     [ApiController]
@@ -42,26 +42,41 @@ namespace usermangement.Controllers
             return Ok(users);
         }
 
-        // 📌 PUT to block multiple users
-        [HttpPut("block")]
-        public async Task<IActionResult> BlockUsers([FromBody] List<Guid> userIds)
+       [HttpPut("block")]
+public async Task<IActionResult> BlockUsers([FromBody] List<Guid> userIds)
+{
+    if (userIds != null && userIds.Count > 0)
+    {
+        var usersToBlock = await _context.Users.Where(u => userIds.Contains(u.Id)).ToListAsync();
+        if (usersToBlock.Count == 0)
         {
-            if (userIds == null || userIds.Count == 0)
-            {
-                return BadRequest("No users selected to block.");
-            }
-
-            var users = await _context.Users.Where(u => userIds.Contains(u.Id)).ToListAsync();
-            if (users.Count == 0)
-            {
-                return NotFound("No users found for the given IDs.");
-            }
-
-            users.ForEach(u => u.IsBlocked = true);
-            await _context.SaveChangesAsync();
-
-            return Ok("Users blocked.");
+            return NotFound("No users found for the given IDs.");
         }
+
+        usersToBlock.ForEach(u => u.IsBlocked = true);
+        await _context.SaveChangesAsync();
+
+        return Ok("Users blocked.");
+    }
+    else
+    {
+        // Block all users if no user is selected
+        var users = await _context.Users.Where(u => u.IsBlocked == false).ToListAsync();
+        if (users.Count == 0)
+        {
+            return BadRequest("No users to block.");
+        }
+
+        foreach (var user in users)
+        {
+            user.IsBlocked = true;
+        }
+
+        await _context.SaveChangesAsync();
+        return Ok(new { message = "All users have been blocked. Please log in again." });
+    }
+}
+
 
         // 📌 PUT to unblock multiple users
         [HttpPut("unblock")]
